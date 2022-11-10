@@ -17,12 +17,31 @@ public class Normalizer {
    * @return a set of relations (as attribute sets) that are in BCNF
    */
   public static Set<Set<String>> BCNFDecompose(Set<String> rel, FDSet fdset) {
-    // TODO - First test if the given relation is already in BCNF with respect to
-    // the provided FD set.
-
+    //first test if the given relation is already in BCNF
+    if(isBCNF(rel, fdset)){
+      Set<Set<String>> result = new HashSet<>();
+      result.add(rel);
+      return result;
+    }
     // TODO - Identify a nontrivial FD that violates BCNF. Split the relation's
     // attributes using that FD, as seen in class.
+    FDSet copy = new FDSet(fdset);
+    Set<Set<String>> superkeys = findSuperkeys(rel, fdset);
+    System.out.print("BCNF START \n" + "Current schema: " + rel + "\n" + "Current schema's superkeys = " + superkeys + "\n");
+    
+    for(FD fd : copy){
+      if(!fd.isTrivial()){
+        Set<String> alpha = fd.getLeft();
+        Set<String> beta = fd.getRight();
+        if(!superkeys.contains(alpha)){
+          System.out.println(alpha);
+        }
+      }
+    }
 
+
+
+ 
     // TODO - Redistribute the FDs in the closure of fdset to the two new
     // relations (R_Left and R_Right) as follows:
     //
@@ -45,21 +64,18 @@ public class Normalizer {
    * @return true if the relation is in BCNF with respect to the specified FD set
    */
   public static boolean isBCNF(Set<String> rel, FDSet fdset) {
-    //Recall that a relational schema is in BCNF if the left-hand side of all non-trivial FDs is a superkey.
-   // FDSet copy = new FDSet(fdset);
+    //a relational schema is in BCNF if the left-hand side of all non-trivial FDs is a superkey.
     FDSet copy = new FDSet(fdset);
-    Set<Set<String>> superkeys = findSuperkeys(rel, fdset);
-    copy.remove_all(FDUtil.trivial(fdset)); //set difference
+    Set<Set<String>> superkeys = findSuperkeys(rel, fdset); 
     for(FD fd: copy){
-      Set<String> left = fd.getLeft();
-      if(!superkeys.contains(left)){
+      if(!fd.isTrivial()){ //only want non trivial fds
+        if(!superkeys.contains(fd.getLeft())){ //if the left hand side of a non trivial FD is not a superkey then rel is not in BCNF
         return false;
       }
-
     }
-
-    return true;
   }
+    return true; //if we make it out of the loop then it is in BCNF
+}
 
   /**
    * This method returns a set of super keys
@@ -70,28 +86,24 @@ public class Normalizer {
    */
   public static Set<Set<String>> findSuperkeys(Set<String> rel, FDSet fdset) {
     //sanity check
-    Set<String> attributes = new HashSet<>();
+    Set<String> attributes = new HashSet<String>();
     for(FD fd: fdset){
       attributes.addAll(fd.getLeft());
       attributes.addAll(fd.getRight());
       for(String str: attributes){
-        if(!rel.contains(str)){ //if a string in attributes is not in rel, then this fd violated the sanity check 
-          throw new IllegalArgumentException("FD refers to unknown attributes: " + fd);
-        }
+          if(!rel.contains(str)){ //if a string in attributes is not in rel, then this fd violated the sanity check 
+            throw new IllegalArgumentException("FD refers to unknown attributes: " + str);
+          }
       }
     }
     //algorithm to find super keys of a relation given a set of functional dependencies
-    Set<Set<String>> superkeys = new HashSet<>();  
-    Set<Set<String>> power_set = FDUtil.powerSet(attributes);
-
-    for(Set<String> alpha : power_set){
-      if(!alpha.isEmpty()){ //skipping empty set from power set
-      Set<String> alpha_closure = attribute_closure(alpha, fdset);
-        if(alpha_closure.equals(rel)){  //testing attribute closure of alpha
+    Set<Set<String>> powerset = FDUtil.powerSet(rel);
+    Set<Set<String>> superkeys = new HashSet<Set<String>>();  
+    //for each attribute in the powerset 
+    for(Set<String> alpha : powerset){
+      if(attribute_closure(alpha, fdset).equals(rel)){  //testing attribute closure of alpha
           superkeys.add(alpha);  //we have found a superkey
-
         }
-      }
     }
     return superkeys;
   }
@@ -107,13 +119,16 @@ public class Normalizer {
     do{
       last_size = result.size();
       for(FD fd : fdset){
-        Set<String> beta = fd.getLeft(); 
+        Set<String> beta = fd.getLeft();
         Set<String> gamma = fd.getRight();
-        if(result.containsAll(beta)){ //if the left side of the fd is a subset of the attribute
-          result.addAll(gamma); //then add the right size
+        if(result.containsAll(beta)){ //if beta is a subset of the attribute
+          result.addAll(gamma); //result U gamma
         }
       }
-    }while(result.size()!=last_size); //until the result doesn't change
+    } while(result.size() != last_size); //until the result doesn't change
+
     return result;
   }
+
+
 }

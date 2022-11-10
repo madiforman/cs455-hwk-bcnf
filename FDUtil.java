@@ -29,6 +29,7 @@ public final class FDUtil {
     }
     return result;
   }
+
   /**
    * Augments every FD in the given set of FDs with the given attributes
    * 
@@ -66,7 +67,7 @@ public final class FDUtil {
       // examine every pair of FDs in the union and check for transitivity
       for (FD alpha : union) {
         for (FD beta : union) {
-          if (alpha != beta && alpha.getRight().equals(beta.getLeft())) {
+          if (alpha != beta && alpha.getRight().containsAll(beta.getLeft())) {
             result.add(new FD(alpha.getLeft(), beta.getRight()));
           }
         }
