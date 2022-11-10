@@ -1,3 +1,4 @@
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -44,8 +45,20 @@ public class Normalizer {
    * @return true if the relation is in BCNF with respect to the specified FD set
    */
   public static boolean isBCNF(Set<String> rel, FDSet fdset) {
-    // TODO
-    return false;
+    //Recall that a relational schema is in BCNF if the left-hand side of all non-trivial FDs is a superkey.
+   // FDSet copy = new FDSet(fdset);
+    FDSet copy = new FDSet(fdset);
+    Set<Set<String>> superkeys = findSuperkeys(rel, fdset);
+    copy.remove_all(FDUtil.trivial(fdset)); //set difference
+    for(FD fd: copy){
+      Set<String> left = fd.getLeft();
+      if(!superkeys.contains(left)){
+        return false;
+      }
+
+    }
+
+    return true;
   }
 
   /**
@@ -56,12 +69,51 @@ public class Normalizer {
    * @return a set of super keys
    */
   public static Set<Set<String>> findSuperkeys(Set<String> rel, FDSet fdset) {
-    // TODO - sanity check: are all the attributes in the FD set even in the
-    // relation? Throw an IllegalArgumentException if not.
+    //sanity check
+    Set<String> attributes = new HashSet<>();
+    for(FD fd: fdset){
+      attributes.addAll(fd.getLeft());
+      attributes.addAll(fd.getRight());
+      for(String str: attributes){
+        if(!rel.contains(str)){ //if a string in attributes is not in rel, then this fd violated the sanity check 
+          throw new IllegalArgumentException("FD refers to unknown attributes: " + fd);
+        }
+      }
+    }
+    //algorithm to find super keys of a relation given a set of functional dependencies
+    Set<Set<String>> superkeys = new HashSet<>();  
+    Set<Set<String>> power_set = FDUtil.powerSet(attributes);
 
-    // TODO - iterate through each subset of the relation's attributes, and test
-    // the attribute closure of each subset
-    return null;
+    for(Set<String> alpha : power_set){
+      if(!alpha.isEmpty()){ //skipping empty set from power set
+      Set<String> alpha_closure = attribute_closure(alpha, fdset);
+        if(alpha_closure.equals(rel)){  //testing attribute closure of alpha
+          superkeys.add(alpha);  //we have found a superkey
+
+        }
+      }
+    }
+    return superkeys;
   }
-
+/**
+ * Finds the attribute closure of a set of attributes
+ * @param attribute attribute to find closure of
+ * @param fdset set of functional dependencies
+ * @return set representing attribute closure of input attribute
+ */
+  public static Set<String> attribute_closure(Set<String> attribute, FDSet fdset){
+    Set<String> result = new HashSet<>(attribute);
+    int last_size;
+    do{
+      last_size = result.size();
+      for(FD fd : fdset){
+        Set<String> beta = fd.getLeft(); 
+        Set<String> gamma = fd.getRight();
+        if(result.containsAll(beta)){ //if the left side of the fd is a subset of the attribute
+          result.addAll(gamma); //then add the right size
+        }
+      }
+    }while(result.size()!=last_size); //until the result doesn't change
+    return result;
+  }
 }

@@ -59,7 +59,15 @@ public class FDSet implements Iterable<FD> {
   public void remove(FD fd) {
     this.fdset.remove(fd);
   }
-
+  /**
+   * removes all functional dependencies from set
+   * @param fdset
+   */
+  public void remove_all(FDSet fdset){
+    for(FD fd: fdset){
+      this.fdset.remove(fd);
+    }
+  }
   /**
    * @return the Set of functional dependencies
    */
