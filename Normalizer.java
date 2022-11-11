@@ -4,7 +4,7 @@ import java.util.Set;
 /**
  * This class provides static methods for performing normalization
  * 
- * @author <YOUR NAME>
+ * @author Madison Sancehz-Forman
  * @version <DATE>
  */
 public class Normalizer {
@@ -23,38 +23,80 @@ public class Normalizer {
       result.add(rel);
       return result;
     }
-    // TODO - Identify a nontrivial FD that violates BCNF. Split the relation's
-    // attributes using that FD, as seen in class.
+    //Identify a nontrivial FD that violates BCNF. Split the relation's attributes using that FD, as seen in class.
     FDSet copy = new FDSet(fdset);
     Set<Set<String>> superkeys = findSuperkeys(rel, fdset);
     System.out.print("BCNF START \n" + "Current schema: " + rel + "\n" + "Current schema's superkeys = " + superkeys + "\n");
-    
     for(FD fd : copy){
       if(!fd.isTrivial()){
-        Set<String> alpha = fd.getLeft();
-        Set<String> beta = fd.getRight();
-        if(!superkeys.contains(alpha)){
-          System.out.println(alpha);
+        if(!superkeys.contains(fd.getLeft())){
+          System.out.println("*** Splitting on " + fd + " ***");
+
+          Set<String> R_left = split_left(fd);
+          Set<String> R_right = split_right(fd, rel);
+
+          FDSet F_left = new FDSet();
+          FDSet F_right = new FDSet();
+          FDSet F_closure = FDUtil.fdSetClosure(fdset);
+          
+          for(FD redistribute : F_closure){
+            Set<String> gamma = redistribute.getLeft();
+            Set<String> sigma = redistribute.getRight();
+            if(R_left.containsAll(gamma) && R_left.containsAll(sigma)){
+              FD temp = new FD(gamma, sigma);
+              F_left.add(temp);
+            }
+            if(R_right.containsAll(gamma) && R_right.containsAll(sigma)){
+              FD temp = new FD(gamma, sigma);
+              F_right.add(temp);
+            }
+
+          }
+          System.out.println("Left schema: " + R_left);
+          System.out.println("Left schema's superkeys: " + findSuperkeys(R_left, F_left));
+          System.out.println("Right schema: " + R_right);
+          System.out.println("Right schema's superkeys: " + findSuperkeys(R_right, F_right));
+          
+          System.out.println("\tCurrent schema: " + R_right);
+          System.out.println("\tCurrent schema's superkeys: " + findSuperkeys(R_right, F_right));
+
+          Set<Set<String>> L = BCNFDecompose(R_left, F_left);
+          Set<Set<String>> R = BCNFDecompose(R_right, F_right);
+          Set<Set<String>> result = new HashSet<>();
+          result.addAll(L);
+          result.addAll(R);
+          return result;
         }
-      }
+      } 
     }
-
-
-
- 
-    // TODO - Redistribute the FDs in the closure of fdset to the two new
-    // relations (R_Left and R_Right) as follows:
-    //
-    // Iterate through closure of the given set of FDs, then union all attributes
-    // appearing in the FD, and test if the union is a subset of the R_Left (or
-    // R_Right) relation. If so, then the FD gets added to the R_Left's (or R_Right's) FD
-    // set. If the union is not a subset of either new relation, then the FD is
-    // discarded
-
-    // Repeat the above until all relations are in BCNF
-    return null;
+    Set<Set<String>> result = new HashSet<>();
+    result.add(rel);
+    return result;
   }
 
+public static Set<String> split_left(FD violater){
+  Set<String> R = new HashSet<>();
+  for(String str: violater.getLeft()){
+    R.add(str);
+  }
+  for(String str: violater.getRight()){
+    R.add(str);
+  }
+  return R;
+}
+public static Set<String> split_right(FD violater, Set<String> rel){
+  Set<String> R = new HashSet<>();
+  for(String str : violater.getLeft()){
+    R.add(str);
+  }
+  for(String str : violater.getRight()){
+    rel.remove(str);
+  }
+  for(String str: rel){
+    R.add(str);
+  }
+  return R;
+}
   /**
    * Tests whether the given relation is in BCNF. A relation is in BCNF iff the
    * left-hand attribute set of all nontrivial FDs is a super key.
