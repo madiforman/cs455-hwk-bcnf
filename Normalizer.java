@@ -27,8 +27,7 @@ public class Normalizer {
     System.out.println("\tCurrent schema's superkeys: " + superkeys);
 
     for(FD fd : fdset){
-      if(!fd.isTrivial()){     //Identify a nontrivial FD that violates BCNF
-        if(!superkeys.contains(fd.getLeft())){
+      if(!fd.isTrivial() && !superkeys.contains(fd.getLeft())){     //Identify a nontrivial FD that violates BCNF
           System.out.println("*** Splitting on " + fd + " ***");
 
           Set<String> R_left = split_left(fd); //finding the sets of attributes for new relations
@@ -49,7 +48,7 @@ public class Normalizer {
           result.addAll(BCNFDecompose(R_left, F_left));
           result.addAll(BCNFDecompose(R_right, F_right));
           return result;
-        }
+
       } 
     }
     //if we made it here, R was already in bcnf
