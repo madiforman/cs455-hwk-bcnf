@@ -140,7 +140,7 @@ public static Set<String> split_right(FD violater, Set<String> rel){
       attributes.addAll(fd.getRight());
       for(String str: attributes){
           if(!rel.contains(str)){ //if a string in attributes is not in rel, then this fd violated the sanity check 
-            throw new IllegalArgumentException("FD refers to unknown attributes: " + str);
+            throw new IllegalArgumentException("FD refers to unknown attributes: " + fd);
           }
       }
     }

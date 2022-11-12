@@ -15,7 +15,6 @@ public class Main {
       System.out.print("BCNF START\nCurrent schema: " + U + "\n" + "Current schema's superkeys = " + Normalizer.findSuperkeys(U, fdsetU) + "\n");
       System.out.println("BCNF END\nFinal BCNF Schemas: " + Normalizer.BCNFDecompose(U, fdsetU));
       System.out.println("**********************************************");
-
     // R(A,B,C)
       Set<String> R = new HashSet<>(Arrays.asList("A", "B", "C"));
       FD g1 = new FD(Arrays.asList("A"), Arrays.asList("B", "C")); // A --> BC
@@ -26,7 +25,6 @@ public class Main {
       System.out.print("BCNF START\nCurrent schema: " + R + "\n" + "Current schema's superkeys = " + Normalizer.findSuperkeys(R, fdsetR) + "\n");
       System.out.println("BCNF END\nFinal BCNF Schemas: " + Normalizer.BCNFDecompose(R, fdsetR));
       System.out.println("**********************************************");
-
     // S(A, B, C, D)
       Set<String> S = new HashSet<>(Arrays.asList("A", "B", "C", "D")); // Relation S(A,B,C,D)
       FD s1 = new FD(Arrays.asList("A"), Arrays.asList("B")); // A --> B
