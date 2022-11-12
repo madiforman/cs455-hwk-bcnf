@@ -22,9 +22,9 @@ public class Normalizer {
       result.add(rel);
       return result;
     }
-    System.out.println("\tCurrent schema: " + rel);
-    System.out.println("\tCurrent schema's superkeys: " + findSuperkeys(rel, fdset));
     Set<Set<String>> superkeys = findSuperkeys(rel, fdset);
+    System.out.println("\tCurrent schema: " + rel);
+    System.out.println("\tCurrent schema's superkeys: " + superkeys);
 
     for(FD fd : fdset){
       if(!fd.isTrivial()){     //Identify a nontrivial FD that violates BCNF
