@@ -22,9 +22,10 @@ public class Normalizer {
       result.add(rel);
       return result;
     }
+    System.out.println("\tCurrent schema: " + rel);
+    System.out.println("\tCurrent schema's superkeys: " + findSuperkeys(rel, fdset));
     Set<Set<String>> superkeys = findSuperkeys(rel, fdset);
-    //uncomment for printing of recursive calls
-    //System.out.print("BCNF START\nCurrent schema: " + rel + "\n" + "Current schema's superkeys = " + Normalizer.findSuperkeys(rel, fdset) + "\n");
+
     for(FD fd : fdset){
       if(!fd.isTrivial()){     //Identify a nontrivial FD that violates BCNF
         if(!superkeys.contains(fd.getLeft())){
@@ -44,9 +45,6 @@ public class Normalizer {
           System.out.println("\tRight schema: " + R_right);
           System.out.println("\tRight schema's superkeys: " + findSuperkeys(R_right, F_right));
           
-          System.out.println("\t\tCurrent schema: " + R_right);
-          System.out.println("\t\tCurrent schema's superkeys: " + findSuperkeys(R_right, F_right));
-
           Set<Set<String>> result = new HashSet<>();
           result.addAll(BCNFDecompose(R_left, F_left));
           result.addAll(BCNFDecompose(R_right, F_right));
@@ -100,7 +98,7 @@ public static Set<String> split_right(FD violater, Set<String> rel){
   Set<String> R = new HashSet<>();
   Set<String> temp = rel; //in order to remove beta
   R.addAll(violater.getLeft()); //alpha U with the rest of the relation minus beta
-  temp.removeAll(violater.getRight());
+  temp.removeAll(violater.getRight()); //removing beta
   R.addAll(temp);
   return R;
 }
