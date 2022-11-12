@@ -23,7 +23,8 @@ public class Normalizer {
       return result;
     }
     Set<Set<String>> superkeys = findSuperkeys(rel, fdset);
-    //System.out.print("BCNF START\nCurrent schema: " + rel + "\n" + "Current schema's superkeys = " + Normalizer.findSuperkeys(rel, fdset) + "\n"); //uncomment for printing of recursive calls
+    //uncomment for printing of recursive calls
+    //System.out.print("BCNF START\nCurrent schema: " + rel + "\n" + "Current schema's superkeys = " + Normalizer.findSuperkeys(rel, fdset) + "\n");
     for(FD fd : fdset){
       if(!fd.isTrivial()){     //Identify a nontrivial FD that violates BCNF
         if(!superkeys.contains(fd.getLeft())){
