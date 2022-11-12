@@ -4,7 +4,7 @@ import java.util.Set;
 /**
  * This class provides static methods for performing normalization
  * 
- * @author Madison Sancehz-Forman
+ * @author Madison Sanchez-Forman
  * @version October 11, 2022
  */
 public class Normalizer {
